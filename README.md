@@ -25,6 +25,48 @@ The detection pipeline currently uses one foreground class and one ground-truth 
 `FPNGridDetectionHead` and the grid-based detection losses remain in the source as legacy components. The active factory creates `FPNTwoStageDetectionHead`; `train.py` uses the loss dictionary returned by that head.
 
 
+## Released checkpoints
+
+The baseline checkpoints are available as assets of [release v1.0.0](https://github.com/maqiu-347/UniUS-HD/releases/tag/v1.0.0):
+
+- [mae_tradition_mit.pth](https://github.com/maqiu-347/UniUS-HD/releases/download/v1.0.0/mae_tradition_mit.pth): the masked reconstruction pretraining checkpoint, used to initialize the encoder for downstream training through `MAE_PRETRAINED_PATH`.
+- [best_model_base.pth](https://github.com/maqiu-347/UniUS-HD/releases/download/v1.0.0/best_model_base.pth): the downstream baseline checkpoint, used for inference through `MODEL_PATH`.
+
+Download them into `weights/` from the repository root. The following PowerShell commands preserve the release filenames:
+
+```powershell
+New-Item -ItemType Directory -Force -Path './weights' | Out-Null
+Invoke-WebRequest -Uri 'https://github.com/maqiu-347/UniUS-HD/releases/download/v1.0.0/mae_tradition_mit.pth' -OutFile './weights/mae_tradition_mit.pth'
+Invoke-WebRequest -Uri 'https://github.com/maqiu-347/UniUS-HD/releases/download/v1.0.0/best_model_base.pth' -OutFile './weights/best_model_base.pth'
+```
+
+To use the pretraining checkpoint for downstream training:
+
+```powershell
+$env:DATA_ROOT = './data/train'
+$env:MAE_PRETRAINED_PATH = './weights/mae_tradition_mit.pth'
+$env:MODEL_SAVE_PATH = './weights/best_model_weight.pth'
+python train.py
+```
+
+Training writes a new checkpoint to `MODEL_SAVE_PATH`; the example keeps the downloaded `best_model_base.pth` separate. If the MAE file does not exist, the reviewed training script falls back to ImageNet initialization, so check that the checkpoint was loaded successfully.
+
+To run inference with the released baseline checkpoint:
+
+```powershell
+$env:DATA_ROOT = './data/val'
+$env:MODEL_PATH = './weights/best_model_base.pth'
+$env:OUTPUT_DIR = './predictions'
+$env:BATCH_SIZE = '8'
+python model.py
+```
+
+Set `MODEL_PATH` explicitly because the reviewed inference script defaults to `./best_model.pth`, which differs from the release filename. It expects a full model state dictionary, whereas the training loader accepts an encoder state dictionary or a checkpoint containing an `encoder` entry. Inference constructs task heads from its CSVs and loads weights strictly, so task IDs and class counts must match the checkpoint configuration. For a checkpoint containing all 27 task heads, a CSV defining only a subset can cause loading errors.
+
+These links were supplied by the repository author. The checkpoint contents, integrity, loading compatibility, and evaluation results have not been verified in this documentation update. Their availability does not resolve the implementation limitations described above and in the review notes.
+
+GitHub Release assets are distributed separately from files tracked in Git. The `.gitignore` rules intentionally exclude downloaded `.pth` files and the `weights/` directory; no exception is needed for either release checkpoint.
+
 ## Environment
 
 Install a compatible PyTorch and torchvision pair for your hardware, followed by the repository dependencies:
@@ -66,8 +108,8 @@ Provide complete, readable inputs. The current loaders recursively substitute an
 
 ## Reproducibility and release notes
 
-The supplied files contain no dataset, trained checkpoint, experiment log, or verified result table. Record the exact data split, patient grouping, pretraining pool, dependency versions, random seeds, checkpoint, and metric definitions for each reported run. If pretraining and supervised splitting use the same data root, check whether downstream validation images were included in pretraining and describe the resulting protocol explicitly.
+Two baseline checkpoints are linked in the Released checkpoints section and distributed through GitHub Releases rather than tracked in the source repository. The supplied source files do not include a dataset, experiment log, or independently verified result table. Record the exact data split, patient grouping, pretraining pool, dependency versions, random seeds, checkpoint, and metric definitions for each reported run. If pretraining and supervised splitting use the same data root, check whether downstream validation images were included in pretraining and describe the resulting protocol explicitly.
 
-The original README's unfilled table reference and promised release schedule have been removed because the supplied artifacts do not substantiate them. Add verified manuscript references and release details when available. No license grant or dataset redistribution permission is established by these files.
+The baseline release is identified as v1.0.0. A specific manuscript table row and the reported performance still require corresponding experiment records; the release links alone do not establish these claims. No release schedule for the complete UniUS-HD framework is asserted here. No license grant or dataset redistribution permission is established by these files.
 
 `.gitignore` excludes common local artifacts by name. It does not remove files that Git already tracks, inspect file contents, or cover arbitrary paths selected through environment variables. Review staged files before publishing, and keep private data and checkpoints in the designated ignored directories. The supplied directory was not a Git repository at review time, so no tracked-file history was available to audit.

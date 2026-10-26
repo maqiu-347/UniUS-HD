@@ -21,6 +21,11 @@ venv/
 !.env.example
 !.env.sample
 # Model checkpoints and exported models
+# Published baseline weights are GitHub Release assets, not Git-tracked files:
+# https://github.com/maqiu-347/UniUS-HD/releases/tag/v1.0.0
+# Download to weights/mae_tradition_mit.pth and weights/best_model_base.pth.
+# Keep both local copies ignored; *.pth also covers copies outside weights/.
+# These rules do not prevent uploads to GitHub Releases.
 # This is a repository exclusion policy, not a statement about redistribution rights.
 *.pth
 *.pt
