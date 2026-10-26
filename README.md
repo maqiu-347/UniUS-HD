@@ -11,77 +11,12 @@ The original repository description associates this baseline with the manuscript
 
 ### Overall UniUS-HD framework
 
-![Overall UniUS-HD architecture showing masked pretraining and downstream multitask fine-tuning](docs/images/unius_hd_architecture.png)
+![Overall UniUS-HD architecture showing masked pretraining and downstream multitask fine-tuning](docs/image/architecture.png)
 
 The overall framework has two stages. Pretraining combines multi-scale progressive masking with multi-level reconstruction supervision and masked-view representation alignment. Downstream fine-tuning uses the shared MiT-B5 encoder for classification, landmark regression, segmentation, and detection, with dynamic boundary refinement in the detection training branch.
 
 **Scope of this repository:** the figure presents the complete proposed UniUS-HD framework. The code and released checkpoints documented here belong to the ablation baseline, which does not implement MPM, PAL, or DBR. The encoder-freezing symbol in the overall figure should not be interpreted as the baseline training configuration: the reviewed `train.py` includes encoder parameters in its optimizer. The baseline computation paths are provided below.
 
-[Open the full-resolution architecture figure](docs/images/unius_hd_architecture.png).
-
-<details>
-<summary>View the architecture implemented by the baseline code</summary>
-
-The diagrams below describe the baseline implemented in this repository. Pretraining learns an encoder through masked reconstruction. Downstream training can load those encoder weights and attach task-specific heads.
-
-### Masked reconstruction pretraining
-
-```mermaid
-flowchart TD
-    P0["Ultrasound image: 512 x 512"] --> P1["Image patch masking: 32 x 32 patches, ratio 0.75"]
-    P1 --> P2["MiT-B5 encoder"]
-    P2 --> P3["Deepest features and linear projection"]
-    P3 --> P4["Independent token masking: ratio 0.75"]
-    P4 --> P5["Restore token positions and insert mask tokens"]
-    P5 --> P6["Reconstruction decoder: 8 Transformer blocks"]
-    P6 --> P7["Predict patch pixels"]
-    P0 --> P8["Patchify and normalize reconstruction targets"]
-    P7 --> P9["Pixel MSE on patches selected by the token mask"]
-    P8 --> P9
-    P4 -. "Loss mask" .-> P9
-
-    classDef encoder fill:#dbeafe,stroke:#2563eb,color:#111827;
-    classDef masking fill:#fef3c7,stroke:#d97706,color:#111827;
-    classDef decoder fill:#dcfce7,stroke:#16a34a,color:#111827;
-    class P2 encoder;
-    class P1,P4 masking;
-    class P5,P6,P7 decoder;
-```
-
-The current code samples the image mask and token mask independently. The reconstruction decoder is used only during pretraining. The saved encoder weights can initialize the downstream encoder through `MAE_PRETRAINED_PATH`; the implementation limitations described above still apply.
-
-### Downstream multitask architecture
-
-```mermaid
-flowchart TD
-    W["Pretrained encoder checkpoint"] -. "Optional weight initialization" .-> E
-    I["Ultrasound image: RGB, resized to 512 x 512"] --> E["Shared MiT-B5 encoder"]
-    E --> F["Shared FPN decoder: fuse multiscale encoder features"]
-    E --> D["Deepest encoder features"]
-    D --> C["Average pooling and classification head"]
-    D --> R["Average pooling and landmark regression head"]
-    C --> CO["Class logits: 9 classification tasks"]
-    R --> RO["Landmark coordinates: 3 regression tasks"]
-    F --> S["Segmentation head and upsampling"]
-    S --> SO["Class-index mask: 12 segmentation tasks"]
-    F --> RPN["RPN: objectness and box proposals"]
-    RPN --> ROI["RoI Align"]
-    F --> |"Fused feature map"| ROI
-    ROI --> H["RoI classification and box regression"]
-    H --> N["NMS and highest-score box selection"]
-    N --> DO["One box and confidence: 3 detection tasks"]
-
-    classDef encoder fill:#dbeafe,stroke:#2563eb,color:#111827;
-    classDef decoder fill:#dcfce7,stroke:#16a34a,color:#111827;
-    classDef output fill:#f3e8ff,stroke:#9333ea,color:#111827;
-    class E encoder;
-    class F decoder;
-    class CO,RO,SO,DO output;
-```
-
-Each task ID selects its own head; the diagram groups heads by task type for readability. Segmentation and detection share the FPN decoder, while classification and landmark regression use the deepest encoder features directly. Detection consumes one fused FPN feature map. The final mask and box selection nodes describe inference; detection training instead uses the RPN and RoI losses. The diagrams show the computation paths, not a guarantee that every module is updated by the current optimizer.
-
-</details>
 
 ## Model and task configuration
 
