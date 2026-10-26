@@ -1,0 +1,59 @@
+# Python bytecode and local tooling caches
+__pycache__/
+*.py[cod]
+.Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+.coverage
+.coverage.*
+htmlcov/
+# Virtual environments and editor settings
+env/
+venv/
+.venv/
+.idea/
+.vscode/
+# Local settings; keep shareable environment templates
+.env
+.env.*
+!.env.example
+!.env.sample
+# Model checkpoints and exported models
+# This is a repository exclusion policy, not a statement about redistribution rights.
+*.pth
+*.pt
+*.ckpt
+*.safetensors
+*.onnx
+weights/
+checkpoints/
+# Generated run directories at the repository root
+/predictions/
+/prediction/
+/evaluation/
+/visualize/
+/outputs/
+/runs/
+/logs/
+*.log
+events.out.tfevents.*
+# Named prediction/evaluation files, including those written at the root
+classification_predictions.json
+detection_predictions.json
+regression_predictions.json
+evaluation_results.json
+evaluation_summary.txt
+# Local datasets and annotation manifests
+# Keep authorized, synthetic examples outside these directories, e.g. examples/.
+# This does not cover data stored under arbitrary directory names.
+/data/
+/datasets/
+csv_files/
+# Operating system artifacts
+.DS_Store
+Thumbs.db
+Desktop.ini
+# Ignore rules do not affect already tracked files.
+# Do not add blanket *.csv, *.json, or image rules: examples and configs may be source files.
