@@ -15,7 +15,7 @@ The original repository description associates this baseline with the manuscript
 
 The overall framework has two stages. Pretraining combines multi-scale progressive masking with multi-level reconstruction supervision and masked-view representation alignment. Downstream fine-tuning uses the shared MiT-B5 encoder for classification, landmark regression, segmentation, and detection, with dynamic boundary refinement in the detection training branch.
 
-**Scope of this repository:** the figure presents the complete proposed UniUS-HD framework. The code and released checkpoints documented here belong to the ablation baseline, which does not implement MPM, PAL, or DBR. The encoder-freezing symbol in the overall figure should not be interpreted as the baseline training configuration: the reviewed `train.py` includes encoder parameters in its optimizer. The baseline computation paths are provided below.
+**Scope of this repository:** the figure presents the complete proposed UniUS-HD framework. The code and released checkpoints documented here belong to the ablation baseline, which does not implement MPM, PAL, or DBR. The encoder-freezing symbol in the overall figure should not be interpreted as the baseline training configuration: the reviewed `train.py` includes encoder parameters in its optimizer. 
 
 
 ## Model and task configuration
