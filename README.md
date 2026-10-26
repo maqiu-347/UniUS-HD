@@ -56,7 +56,7 @@ To use the pretraining checkpoint for downstream training:
 ```powershell
 $env:DATA_ROOT = './data/train'
 $env:MAE_PRETRAINED_PATH = './weights/mae_tradition_mit.pth'
-$env:MODEL_SAVE_PATH = './weights/best_model_weight.pth'
+$env:MODEL_SAVE_PATH = './weights/best_model_base.pth'
 python train.py
 ```
 
